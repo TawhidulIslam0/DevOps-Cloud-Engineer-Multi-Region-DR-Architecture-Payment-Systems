@@ -1,0 +1,72 @@
+{
+  "hosted_zone": {
+    "name": "paysecure.example.",
+    "comment": "PaySecure Gateway multi-region DNS failover configuration"
+  },
+  "records": [
+    {
+      "name": "api.paysecure.example.",
+      "type": "A",
+      "ttl": 60,
+      "alias": true,
+      "alias_target": {
+        "region": "ap-south-1",
+        "resource": "Mumbai Application Load Balancer",
+        "evaluate_target_health": true
+      },
+      "failover": {
+        "type": "PRIMARY",
+        "set_identifier": "paysecure-mumbai-primary"
+      },
+      "health_check": {
+        "id": "MUMBAI-HEALTH-CHECK-ID",
+        "endpoint": "health-mumbai.paysecure.example",
+        "path": "/health/ready",
+        "protocol": "HTTPS",
+        "port": 443
+      }
+    },
+    {
+      "name": "api.paysecure.example.",
+      "type": "A",
+      "ttl": 60,
+      "alias": true,
+      "alias_target": {
+        "region": "ap-south-2",
+        "resource": "Hyderabad Application Load Balancer",
+        "evaluate_target_health": true
+      },
+      "failover": {
+        "type": "SECONDARY",
+        "set_identifier": "paysecure-hyderabad-secondary"
+      },
+      "health_check": {
+        "id": "HYDERABAD-HEALTH-CHECK-ID",
+        "endpoint": "health-hyderabad.paysecure.example",
+        "path": "/health/ready",
+        "protocol": "HTTPS",
+        "port": 443
+      }
+    }
+  ],
+  "failover_policy": {
+    "routing_policy": "FAILOVER",
+    "primary_region": "ap-south-1",
+    "secondary_region": "ap-south-2",
+    "primary_role": "PRODUCTION",
+    "secondary_role": "WARM_STANDBY",
+    "ttl_seconds": 60
+  },
+  "recovery_targets": {
+    "availability": "99.99%",
+    "rpo": "<1 minute",
+    "rto": "<5 minutes"
+  },
+  "operational_notes": [
+    "Primary and secondary records use the same DNS name and record type.",
+    "The health-check IDs are placeholders and must be replaced with actual Route 53 health-check IDs after deployment.",
+    "The ALB targets are placeholders representing the regional production and DR load balancers.",
+    "Database promotion and write ownership must be established before Hyderabad accepts production writes.",
+    "DNS failover does not guarantee that existing client connections will migrate automatically."
+  ]
+}
