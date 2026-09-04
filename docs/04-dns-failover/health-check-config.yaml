@@ -1,0 +1,48 @@
+# PaySecure Gateway - Route 53 Health Check Configuration
+# Region: AWS Mumbai (ap-south-1)
+# Purpose: Monitor production application readiness before DNS failover
+
+health_check:
+  name: paysecure-mumbai-primary-health
+  type: HTTPS
+  fully_qualified_domain_name: health-mumbai.paysecure.example
+  resource_path: /health/ready
+  port: 443
+
+  # Route 53 supports 10-second and 30-second intervals.
+  # 10 seconds is selected to support the project's <5 minute RTO target.
+  request_interval: 10
+
+  # Three consecutive failures mark the endpoint unhealthy.
+  failure_threshold: 3
+
+  enable_sni: true
+
+  search_string: '"status":"ready"'
+
+  expected_response:
+    status_code: 200
+    content_type: application/json
+
+  monitoring:
+    cloudwatch_alarm: true
+    alarm_name: paysecure-mumbai-route53-health
+    notification_channel: dr-alerts
+
+  failover_behavior:
+    role: PRIMARY
+    secondary_region: ap-south-2
+    secondary_endpoint: health-hyderabad.paysecure.example
+
+  operational_targets:
+    availability_target: "99.99%"
+    rpo_target: "<1 minute"
+    rto_target: "<5 minutes"
+
+  notes:
+    - "Health endpoint must not modify financial state."
+    - "Health endpoint must not expose credentials or customer data."
+    - "Database connectivity should be checked without performing transactions."
+    - "Kafka connectivity should be checked where required by application readiness."
+    - "A health-check failure does not independently authorize database promotion."
+    - "DR promotion must establish single-region write ownership before Hyderabad accepts production writes."
