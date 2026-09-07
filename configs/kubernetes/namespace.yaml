@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: paysecure
+  labels:
+    app.kubernetes.io/part-of: paysecure
+    environment: production

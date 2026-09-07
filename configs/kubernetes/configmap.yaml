@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: paysecure-runtime
+  namespace: paysecure
+data:
+  APP_ENVIRONMENT: "production"
+  AWS_PRIMARY_REGION: "ap-south-1"
+  AWS_DR_REGION: "ap-south-2"
+  LOG_FORMAT: "json"
+  HEALTH_PATH: "/health/ready"
+  METRICS_PATH: "/metrics"

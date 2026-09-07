@@ -1,0 +1,23 @@
+# Example Terraform variables.
+# Do not store production secrets in this file.
+
+primary_region = "ap-south-1"
+dr_region      = "ap-south-2"
+
+environment = "dr"
+project_name = "paysecure"
+
+vpc_cidr_primary = "10.10.0.0/16"
+vpc_cidr_dr      = "10.20.0.0/16"
+
+availability_zones_primary = [
+  "ap-south-1a",
+  "ap-south-1b",
+  "ap-south-1c"
+]
+
+availability_zones_dr = [
+  "ap-south-2a",
+  "ap-south-2b",
+  "ap-south-2c"
+]

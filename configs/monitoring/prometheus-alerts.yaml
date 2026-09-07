@@ -1,0 +1,87 @@
+groups:
+  - name: paysecure-dr-alerts
+    rules:
+
+      - alert: CriticalServiceUnavailable
+        expr: kube_deployment_status_replicas_available{namespace="paysecure"} < 1
+        for: 1m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "Critical PaySecure service unavailable"
+          description: "A critical deployment has no available replicas."
+
+      - alert: HighApplicationCPU
+        expr: |
+          (
+            sum by (namespace, pod) (
+              rate(container_cpu_usage_seconds_total{namespace="paysecure"}[5m])
+            )
+            /
+            sum by (namespace, pod) (
+              kube_pod_container_resource_requests{namespace="paysecure",resource="cpu"}
+            )
+          ) > 0.80
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High CPU utilization"
+          description: "PaySecure workload CPU utilization exceeds 80%."
+
+      - alert: AuroraReplicationLagHigh
+        expr: aws_rds_aurora_replica_lag_average > 30
+        for: 1m
+        labels:
+          severity: critical
+          category: data
+        annotations:
+          summary: "Aurora replication lag exceeds threshold"
+          description: "Aurora replication lag may threaten the RPO objective."
+
+      - alert: KafkaConsumerLagHigh
+        expr: kafka_consumergroup_lag_sum > 10000
+        for: 2m
+        labels:
+          severity: critical
+          category: messaging
+        annotations:
+          summary: "Kafka consumer lag is high"
+          description: "Consumer lag may affect transaction event processing."
+
+      - alert: Route53PrimaryHealthFailure
+        expr: probe_success{job="route53-primary-health"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: dns
+        annotations:
+          summary: "Primary DNS health check failed"
+          description: "The Mumbai application health endpoint is unhealthy."
+
+      - alert: RedisUnavailable
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: cache
+        annotations:
+          summary: "Redis unavailable"
+          description: "ElastiCache Redis is unavailable to the monitoring target."
+
+      - alert: CriticalAPIErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{namespace="paysecure",status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{namespace="paysecure"}[5m]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          category: application
+        annotations:
+          summary: "Critical API error rate elevated"
+          description: "HTTP 5xx error rate exceeds 5%."

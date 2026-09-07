@@ -1,0 +1,43 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: transaction-service
+  namespace: paysecure
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: transaction-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: settlement-service
+  namespace: paysecure
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: settlement-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: webhook-service
+  namespace: paysecure
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: webhook-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: critical-api
+  namespace: paysecure
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: critical-api
