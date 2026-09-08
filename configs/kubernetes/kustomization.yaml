@@ -9,3 +9,4 @@ resources:
   - critical-services.yaml
   - hpa.yaml
   - pdb.yaml
+  - network-policy.yaml
