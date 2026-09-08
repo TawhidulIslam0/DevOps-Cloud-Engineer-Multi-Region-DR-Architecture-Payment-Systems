@@ -1,13 +1,13 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: transaction-service
+  name: transaction-processor
   namespace: paysecure
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: transaction-service
+    name: transaction-processor
   minReplicas: 3
   maxReplicas: 12
   behavior:
@@ -26,13 +26,13 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: settlement-service
+  name: settlement-engine
   namespace: paysecure
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: settlement-service
+    name: settlement-engine
   minReplicas: 3
   maxReplicas: 12
   metrics:
@@ -46,13 +46,13 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: critical-api
+  name: payment-api
   namespace: paysecure
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: critical-api
+    name: payment-api
   minReplicas: 3
   maxReplicas: 12
   metrics:
