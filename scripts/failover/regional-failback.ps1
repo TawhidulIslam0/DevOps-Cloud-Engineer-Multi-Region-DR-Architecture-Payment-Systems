@@ -5,6 +5,7 @@ param(
     [string]$PrimaryRegion = "ap-south-1",
     [string]$DrRegion = "ap-south-2",
     [string]$GlobalClusterId = "paysecure-global",
+    [string]$PrimaryDbClusterIdentifier = "",
 
     [string]$PrimaryAlbDns = "",
     [string]$DrAlbDns = ""
@@ -119,9 +120,13 @@ Invoke-SafeAwsCommand `
 Write-Host ""
 Write-Host "Step 10: Controlled Aurora switchover"
 
+if ($Execute -and [string]::IsNullOrWhiteSpace($PrimaryDbClusterIdentifier)) {
+    throw "PrimaryDbClusterIdentifier is required when executing failback. Use the regional Aurora cluster identifier, not the global cluster identifier."
+}
+
 Invoke-SafeAwsCommand `
     "Aurora switchover" `
-    "rds switchover-global-cluster --global-cluster-identifier $GlobalClusterId --target-db-cluster-identifier $GlobalClusterId"
+    "rds switchover-global-cluster --global-cluster-identifier $GlobalClusterId --target-db-cluster-identifier $PrimaryDbClusterIdentifier --region $PrimaryRegion"
 
 Write-Host ""
 Write-Host "Step 11: Wait for database topology stabilization"
