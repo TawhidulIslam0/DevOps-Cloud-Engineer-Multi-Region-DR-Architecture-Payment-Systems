@@ -4,7 +4,7 @@
 
 resource "aws_msk_cluster" "primary" {
   cluster_name           = "${var.project_name}-primary"
-  kafka_version           = "3.6.0"
+  kafka_version          = "3.6.0"
   number_of_broker_nodes = 6
 
   broker_node_group_info {
@@ -44,7 +44,7 @@ resource "aws_msk_cluster" "dr" {
   provider = aws.dr
 
   cluster_name           = "${var.project_name}-dr"
-  kafka_version           = "3.6.0"
+  kafka_version          = "3.6.0"
   number_of_broker_nodes = 3
 
   broker_node_group_info {
@@ -82,10 +82,10 @@ resource "aws_msk_cluster" "dr" {
 
 resource "aws_elasticache_replication_group" "primary" {
   replication_group_id = "${var.project_name}-primary"
-  description         = "PaySecure primary Redis cluster"
+  description          = "PaySecure primary Redis cluster"
 
-  engine         = "redis"
-  node_type      = "cache.r6g.large"
+  engine             = "redis"
+  node_type          = "cache.r6g.large"
   num_cache_clusters = 3
 
   port = 6379
@@ -115,10 +115,10 @@ resource "aws_elasticache_replication_group" "dr" {
   provider = aws.dr
 
   replication_group_id = "${var.project_name}-dr"
-  description         = "PaySecure DR Redis cluster"
+  description          = "PaySecure DR Redis cluster"
 
-  engine            = "redis"
-  node_type         = "cache.r6g.large"
+  engine             = "redis"
+  node_type          = "cache.r6g.large"
   num_cache_clusters = 2
 
   port = 6379
