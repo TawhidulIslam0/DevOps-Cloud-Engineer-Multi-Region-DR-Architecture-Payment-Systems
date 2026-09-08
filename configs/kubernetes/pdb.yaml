@@ -1,24 +1,24 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: transaction-service
+  name: transaction-processor
   namespace: paysecure
 spec:
   minAvailable: 2
   selector:
     matchLabels:
-      app: transaction-service
+      app: transaction-processor
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: settlement-service
+  name: settlement-engine
   namespace: paysecure
 spec:
   minAvailable: 2
   selector:
     matchLabels:
-      app: settlement-service
+      app: settlement-engine
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -34,10 +34,10 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: critical-api
+  name: payment-api
   namespace: paysecure
 spec:
   minAvailable: 2
   selector:
     matchLabels:
-      app: critical-api
+      app: payment-api
