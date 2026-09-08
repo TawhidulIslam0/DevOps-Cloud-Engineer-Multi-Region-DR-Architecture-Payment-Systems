@@ -6,9 +6,13 @@ param(
     [string]$DrRegion = "ap-south-2",
 
     [string]$GlobalClusterId = "paysecure-global",
+    [string]$DrDbClusterIdentifier = "",
+    [switch]$AllowDataLoss,
 
     [string]$PrimaryAlbDns = "",
     [string]$DrAlbDns = "",
+    [string]$DrAlbHostedZoneId = "",
+    [string]$DrHealthCheckId = "",
 
     [string]$HostedZoneId = "",
     [string]$RecordName = "api.paysecure.example",
@@ -118,9 +122,15 @@ else {
 Write-Host ""
 Write-Host "Step 8: Aurora failover/switchover..."
 
+if ($Execute -and [string]::IsNullOrWhiteSpace($DrDbClusterIdentifier)) {
+    throw "DrDbClusterIdentifier is required when executing a failover. Use the regional Aurora cluster identifier, not the global cluster identifier."
+}
+
+$FailoverOptions = if ($AllowDataLoss) { "--allow-data-loss" } else { "" }
+
 Invoke-SafeAwsCommand `
     "Aurora global database operation" `
-    "rds failover-global-cluster --global-cluster-identifier $GlobalClusterId --target-db-cluster-identifier $GlobalClusterId --allow-data-loss"
+    "rds failover-global-cluster --global-cluster-identifier $GlobalClusterId --target-db-cluster-identifier $DrDbClusterIdentifier --region $DrRegion $FailoverOptions"
 
 Write-Host ""
 Write-Host "Step 9: Waiting for database state..."
@@ -138,6 +148,10 @@ if ([string]::IsNullOrWhiteSpace($HostedZoneId)) {
     Write-Host "Hosted Zone ID not configured; Route 53 change skipped."
 }
 else {
+    if ([string]::IsNullOrWhiteSpace($DrAlbDns) -or [string]::IsNullOrWhiteSpace($DrAlbHostedZoneId) -or [string]::IsNullOrWhiteSpace($DrHealthCheckId)) {
+        throw "DrAlbDns, DrAlbHostedZoneId, and DrHealthCheckId are required to submit the Route 53 secondary alias record."
+    }
+
     $ChangeBatch = @"
 {
   "Comment": "PaySecure DR regional failover",
@@ -151,20 +165,37 @@ else {
         "Failover": {
           "Failover": "SECONDARY"
         },
+                ""AliasTarget"": {
+                    ""HostedZoneId"": ""$DrAlbHostedZoneId"",
+                    ""DNSName"": ""dualstack.$DrAlbDns"",
+                    ""EvaluateTargetHealth"": true
+                },
         "TTL": 60,
-        "ResourceRecords": []
+                ""HealthCheckId"": ""$DrHealthCheckId""
       }
     }
   ]
 }
 "@
 
-    Write-Host "Route 53 failover must use the production alias/change configuration."
-    Write-Host "Review route53-config.json before execution."
-
     if ($Execute) {
-        Write-Host "Route 53 change requires production-specific alias configuration."
-        Write-Host "No automatic DNS mutation performed by this script."
+        $ChangeFile = Join-Path $env:TEMP "paysecure-route53-failover-$([guid]::NewGuid()).json"
+        Set-Content -Path $ChangeFile -Value $ChangeBatch -Encoding ascii
+        try {
+            $ChangeId = aws route53 change-resource-record-sets `
+                --hosted-zone-id $HostedZoneId `
+                --change-batch "file://$ChangeFile" `
+                --query "ChangeInfo.Id" `
+                --output text
+
+            aws route53 wait resource-record-sets-changed --id $ChangeId
+        }
+        finally {
+            Remove-Item -Path $ChangeFile -Force -ErrorAction SilentlyContinue
+        }
+    }
+    else {
+        Write-Host "DRY-RUN: Route 53 change batch generated but not submitted."
     }
 }
 
