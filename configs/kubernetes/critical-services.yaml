@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: transaction-service
+  name: transaction-processor
   namespace: paysecure
 spec:
   replicas: 3
@@ -12,22 +12,25 @@ spec:
       maxSurge: 1
   selector:
     matchLabels:
-      app: transaction-service
+      app: transaction-processor
   template:
     metadata:
       labels:
-        app: transaction-service
+        app: transaction-processor
     spec:
       terminationGracePeriodSeconds: 30
       containers:
-        - name: transaction-service
-          image: paysecure/transaction-service:latest
+        - name: transaction-processor
+          image: paysecure/transaction-processor:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: paysecure-runtime
+            - secretRef:
+                name: paysecure-secrets
+                optional: true
           resources:
             requests:
               cpu: "250m"
@@ -55,11 +58,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: transaction-service
+  name: transaction-processor
   namespace: paysecure
 spec:
   selector:
-    app: transaction-service
+    app: transaction-processor
   ports:
     - port: 80
       targetPort: 8080
@@ -67,27 +70,30 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: settlement-service
+  name: settlement-engine
   namespace: paysecure
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: settlement-service
+      app: settlement-engine
   template:
     metadata:
       labels:
-        app: settlement-service
+        app: settlement-engine
     spec:
       containers:
-        - name: settlement-service
-          image: paysecure/settlement-service:latest
+        - name: settlement-engine
+          image: paysecure/settlement-engine:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: paysecure-runtime
+            - secretRef:
+                name: paysecure-secrets
+                optional: true
           resources:
             requests:
               cpu: "250m"
@@ -109,11 +115,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: settlement-service
+  name: settlement-engine
   namespace: paysecure
 spec:
   selector:
-    app: settlement-service
+    app: settlement-engine
   ports:
     - port: 80
       targetPort: 8080
@@ -175,27 +181,30 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: critical-api
+  name: payment-api
   namespace: paysecure
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: critical-api
+      app: payment-api
   template:
     metadata:
       labels:
-        app: critical-api
+        app: payment-api
     spec:
       containers:
-        - name: critical-api
-          image: paysecure/critical-api:latest
+        - name: payment-api
+          image: paysecure/payment-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: paysecure-runtime
+            - secretRef:
+                name: paysecure-secrets
+                optional: true
           resources:
             requests:
               cpu: "250m"
@@ -217,11 +226,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: critical-api
+  name: payment-api
   namespace: paysecure
 spec:
   selector:
-    app: critical-api
+    app: payment-api
   ports:
     - port: 80
       targetPort: 8080
