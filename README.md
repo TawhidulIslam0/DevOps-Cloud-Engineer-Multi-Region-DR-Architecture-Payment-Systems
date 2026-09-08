@@ -83,3 +83,21 @@ The proposed architecture uses:
 ```text
 AWS Mumbai
 ap-south-1
+```
+
+## Risk Analysis
+
+The 20-mode disaster recovery FMEA, including severity, occurrence, detection, RPN calculations, and mitigation priorities, is documented in [docs/09-risk-analysis/fmea.md](docs/09-risk-analysis/fmea.md).
+
+## Monitoring and Dashboards
+
+Synthetic payment, DNS, cross-region connectivity, certificate, backup-restore, and audience-specific dashboard requirements are documented in [docs/10-monitoring/synthetic-monitoring-and-dashboards.md](docs/10-monitoring/synthetic-monitoring-and-dashboards.md).
+
+## Validation Evidence
+
+Local Terraform, Kubernetes, PowerShell, JSON, FMEA, and failover dry-run results are recorded in [VALIDATION.md](VALIDATION.md). Live AWS testing is intentionally excluded because no sandbox account was available.
+
+## Error Hunter Analysis
+
+Five deliberate architecture inconsistencies and their corrections are documented in [docs/11-error-hunt/deliberate-errors.md](docs/11-error-hunt/deliberate-errors.md).
+
