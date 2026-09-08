@@ -37,7 +37,7 @@ variable "vpc_cidr_dr" {
 variable "availability_zones_primary" {
   description = "Availability Zones used by the primary region."
   type        = list(string)
-  default     = [
+  default = [
     "ap-south-1a",
     "ap-south-1b",
     "ap-south-1c"
@@ -47,7 +47,7 @@ variable "availability_zones_primary" {
 variable "availability_zones_dr" {
   description = "Availability Zones used by the DR region."
   type        = list(string)
-  default     = [
+  default = [
     "ap-south-2a",
     "ap-south-2b",
     "ap-south-2c"
